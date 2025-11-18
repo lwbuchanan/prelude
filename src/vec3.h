@@ -2,20 +2,30 @@
 
 #include <cmath>
 #include <ostream>
-struct vec3 {
+class vec3 {
+public:
+  // vector components
   double c[3];
 
+  // Zero vector
   vec3() : c{0, 0, 0} {}
+
+  // Typical vector constructor
   vec3(double x, double y, double z) : c{x, y, z} {}
 
+  // Getters
   double x() const { return c[0]; }
   double y() const { return c[1]; }
   double z() const { return c[2]; }
 
+  // Inverter
   vec3 operator-() const { return vec3(-c[0], -c[1], -c[2]); }
+
+  // Index-wise getters
   double operator[](int i) const { return c[i]; }
   double &operator[](int i) { return c[i]; }
 
+  // Math operations
   vec3 &operator+=(const vec3 &v) {
     c[0] += v.c[0];
     c[1] += v.c[1];
