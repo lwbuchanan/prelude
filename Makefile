@@ -2,8 +2,7 @@ CXX := g++
 
 INCLUDES := -I/usr/local/include
 LIBS := -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lraylib
-CXXFLAGS := $(INCLUDES) $(LIBS)
-CXXOBJFLAGS := $(CXXFLAGS) -c
+CXXFLAGS := -std=c++20 -Wall
 
 BIN_PATH := bin
 SRC_PATH := src
@@ -20,10 +19,10 @@ CLEAN_LIST := $(TARGET) $(CXXOBJ)
 default: makedir all
 
 $(TARGET): $(CXXOBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(CXXOBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $(CXXOBJ) $(INCLUDES) $(LIBS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
-	$(CXX) $(CXXOBJFLAGS) -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(LIBS)
 
 # phony rules
 .PHONY: run
