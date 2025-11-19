@@ -11,7 +11,7 @@ public:
   vec3() : c{0, 0, 0} {}
 
   // Typical vector constructor
-  vec3(double x, double y, double z) : c{x, y, z} {}
+  vec3(double c0, double c1, double c2) : c{c0, c1, c2} {}
 
   // Getters
   double x() const { return c[0]; }
@@ -43,7 +43,7 @@ public:
   vec3 &operator/=(double t) { return *this *= 1 / t; }
 
   double length_squared() const {
-    return c[0] * c[0] + c[1] * c[1] * c[2] * c[2];
+    return c[0] * c[0] + c[1] * c[1] + c[2] * c[2];
   }
 
   double length() const { return std::sqrt(length_squared()); }

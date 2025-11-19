@@ -1,5 +1,8 @@
 CXX := g++
-CXXFLAGS := -Wall
+
+INCLUDES := -I/usr/local/include
+LIBS := -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lraylib
+CXXFLAGS := $(INCLUDES) $(LIBS)
 CXXOBJFLAGS := $(CXXFLAGS) -c
 
 BIN_PATH := bin

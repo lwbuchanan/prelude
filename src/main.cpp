@@ -1,29 +1,123 @@
 #include "color.h"
+#include "ray.h"
 #include "vec3.h"
 
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
-void draw(std::string filename, int cols, int rows) {
+namespace rl {
+extern "C" {
+#include <raylib.h>
+}
+} // namespace rl
+
+bool hit_sphere(const point3 &center, double radius, const ray &r) {
+  vec3 oc = center - r.origin();
+  double a = dot(r.direction(), r.direction());
+  double b = -2.0 * dot(r.direction(), oc);
+  double c = dot(oc, oc) - radius * radius;
+  double discriminant = b * b - 4 * a * c;
+  return discriminant >= 0;
+}
+
+color ray_color(const ray &r) {
+  if (hit_sphere(vec3(0, 0, -1), 0.5, r)) {
+    return color(1, 0, 0);
+  }
+  vec3 r_direction_unit = unit_vector(r.direction());
+  double a = 0.5 * (r_direction_unit.y() + 1.0);
+  return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+}
+
+rl::Color to_rl_color(const color &c) {
+  return rl::ColorFromNormalized(
+      {float(c.x()), float(c.y()), float(c.z()), 1.0});
+}
+
+void draw_scene(std::string filename, int image_width, int image_height,
+                bool raylib) {
+  std::clog << "Drawing scene...\n";
+
+  // Define camera
+  double focal_length = 1.0;
+  double viewport_height = 2.0;
+  double viewport_width =
+      viewport_height * (double(image_width) / image_height);
+  point3 camera_center = point3(0, 0, 0);
+
+  // Edge vectors
+  vec3 viewport_u = vec3(viewport_width, 0, 0);
+  vec3 viewport_v = vec3(0, -viewport_height, 0);
+
+  vec3 pixel_delta_u = viewport_u / image_width;
+  vec3 pixel_delta_v = viewport_v / image_height;
+
+  // Viewport origin position (relative to camera)
+  vec3 viewport_upper_left = camera_center - vec3(0, 0, focal_length) -
+                             viewport_u / 2 - viewport_v / 2;
+
+  vec3 pixel00_loc =
+      viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+  // Prepare output image file
   std::ofstream filestream(filename);
+  if (!filestream.is_open()) {
+    std::cerr << "Failed to open .ppm file\n";
+  }
 
   // Write PPM header
-  filestream << "P3\n" << cols << " " << rows << "\n255\n";
+  filestream << "P3\n" << image_width << " " << image_height << "\n255\n";
 
   // Write draw some colored vectors
-  for (int j = 0; j < rows; j++) {
-    std::clog << "\rScanlines left: " << (rows - j) << ' ' << std::flush;
-    for (int i = 0; i < cols; i++) {
-      color pixel = color(double(i)/(cols-1), double(j)/(rows-1), 0);
+  for (int j = 0; j < image_height; j++) {
+    std::clog << "\rScanlines left: " << (image_height - j) << ' '
+              << std::flush;
+    for (int i = 0; i < image_width; i++) {
+
+      vec3 pixel_center =
+          pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
+      vec3 ray_direction = pixel_center - camera_center;
+      ray r(camera_center, ray_direction);
+
+      color pixel = ray_color(r);
       write_color(filestream, pixel);
+      if (raylib) {
+        if (i == 0) {
+          rl::EndDrawing();
+          rl::BeginDrawing();
+        }
+        rl::DrawPixel(i, j, to_rl_color(pixel));
+      }
     }
   }
   std::clog << "\rDone!                     \n";
 }
 
 int main(int argc, char *argv[]) {
+  double aspect_ratio = 16.0 / 9.0;
+  int window_width = 800;
+  int window_height = int(window_width / aspect_ratio);
+  window_height = (window_height < 1) ? 1 : window_height;
   std::string filename = "image.ppm";
-  draw(filename, 512, 512);
+
+  bool raylib = false;
+  if (raylib) {
+    rl::InitWindow(window_width, window_height, "Prelude");
+    rl::BeginDrawing();
+    draw_scene(filename, window_width, window_height, true);
+    rl::EndDrawing();
+
+    while (!rl::WindowShouldClose()) {
+      rl::BeginDrawing();
+      sleep(1);
+      rl::EndDrawing();
+    }
+    rl::CloseWindow();
+  } else {
+    draw_scene(filename, window_width, window_height, false);
+  }
+
   return 0;
 }
