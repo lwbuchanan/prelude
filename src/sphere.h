@@ -22,7 +22,6 @@ public:
       return false;
     }
 
-
     double discriminant_sqrt = std::sqrt(discriminant);
 
     // Get nearest root in range

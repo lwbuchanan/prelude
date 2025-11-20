@@ -12,15 +12,20 @@ public:
 
   double size() const { return max - min; }
 
-  // Exclusive bounds
-  bool contains(double value) { return min < value && value < max; }
+  bool contains(double value) const { return min <= value && value <= max; }
 
-  // Inclusive bounds
-  bool surrounds(double value) { return min <= value && value <= max; }
+  bool surrounds(double value) const { return min < value && value < max; }
+
+  double clamp(double x) const {
+    if (x < min)
+      return min;
+    if (x > max)
+      return max;
+    return x;
+  }
 
   static const interval empty, universe;
 };
-
 
 inline const interval interval::empty = interval(infinity, -infinity);
 inline const interval interval::universe = interval(-infinity, infinity);
