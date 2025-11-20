@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <ostream>
+
 class vec3 {
 public:
   // vector components
@@ -94,4 +95,3 @@ inline vec3 cross(const vec3 &u, const vec3 v) {
 
 // "Normalize" the vector to length 1.0
 inline vec3 unit_vector(const vec3 &v) { return v / v.length(); }
-
