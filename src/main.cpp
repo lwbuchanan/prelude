@@ -3,13 +3,14 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "color.h"
 
 #include <fstream>
 #include <iostream>
 
 color ray_color(const ray &ray, const hittable &world) {
   hit_record record;
-  if (world.hit(ray, 0, infinity, record)) {
+  if (world.hit(ray, interval(0, infinity), record)) {
     return 0.5 * (record.normal + color(1, 1, 1));
   }
 

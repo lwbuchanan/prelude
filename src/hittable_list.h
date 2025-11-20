@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hittable.h"
+#include "interval.h"
 
 #include <memory>
 #include <vector>
@@ -17,14 +18,13 @@ public:
 
   void add(shared_ptr<hittable> hittable) { hittables.push_back(hittable); }
 
-  bool hit(const ray &ray, double ray_tmin, double ray_tmax,
-           hit_record &record) const override {
+  bool hit(const ray &ray, interval ray_t, hit_record &record) const override {
     hit_record temp_record;
     bool hit_anything = false;
-    double current_closest = ray_tmax;
+    double current_closest = ray_t.max;
 
     for (const auto &hittable : hittables) {
-      if (hittable->hit(ray, ray_tmin, current_closest, temp_record)) {
+      if (hittable->hit(ray, interval(ray_t.min, current_closest), temp_record)) {
         hit_anything = true;
         current_closest = temp_record.t;
         record = temp_record;

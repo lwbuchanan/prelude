@@ -1,7 +1,7 @@
 #pragma once
 
-
 #include "hittable.h"
+
 class sphere : public hittable {
   point3 center;
   double radius;
@@ -10,7 +10,7 @@ public:
   sphere(point3 center, double radius)
       : center(center), radius(std::fmax(0, radius)) {}
 
-  bool hit(const ray &ray, double ray_tmin, double ray_tmax,
+  bool hit(const ray &ray, interval ray_t,
            hit_record &record) const override {
     vec3 center_offset = center - ray.origin();
     double a = ray.direction().length_squared();
@@ -22,13 +22,14 @@ public:
       return false;
     }
 
+
     double discriminant_sqrt = std::sqrt(discriminant);
 
+    // Get nearest root in range
     double root = (h - discriminant_sqrt) / a;
-
-    if (root <= ray_tmin || ray_tmax <= root) {
+    if (!ray_t.surrounds(root)) {
       root = (h + discriminant_sqrt) / a;
-      if (root <= ray_tmin || ray_tmax <= root) {
+      if (!ray_t.surrounds(root)) {
         return false;
       }
     }
