@@ -1,8 +1,8 @@
 #pragma once
 
-#include "color.h"
+#include "common.h"
 #include "hittable.h"
-#include "vec3.h"
+#include "material.h"
 
 /**
  * The camera is a medium between the image and the viewport.
@@ -16,10 +16,12 @@ public:
   int image_width;
   double aspect_ratio;
   int samples_per_pixel;
+  int max_bounces;
 
-  camera(int image_width, double aspect_ratio, int samples_per_pixel)
+  camera(int image_width, double aspect_ratio, int samples_per_pixel,
+         int max_bounces)
       : image_width(image_width), aspect_ratio(aspect_ratio),
-        samples_per_pixel(samples_per_pixel) {}
+        samples_per_pixel(samples_per_pixel), max_bounces(max_bounces) {}
 
   /**
    * Initialize the camera, then draw the scene to `{name}.ppm`
@@ -42,15 +44,22 @@ private:
   /*
    * Shade the ray based on the hittables it contacts in the scene
    */
-  color ray_color(const ray &ray, const hittable &scene) const;
+  color ray_color(const ray &ray, int bounces, const hittable &scene) const;
 
   /*
-   * Construct a ray from the camara center to a randomly sampled point around pixel (i,j)
+   * Construct a ray from the camara center to a randomly sampled point around
+   * pixel (i,j)
    */
   ray get_ray(int i, int j) const;
 
   /*
-   * Return a random vector in the square [[-0.5,-0.5]] x [[0.5,0.5]]
+   * Return a random vector in the square [[-0.5,-0.5]] x [[0.5,0.5]] at the
+   * camera center
    */
   vec3 sample_square() const;
+
+  /*
+   * Return a random vector in a disk around the camera center
+   */
+  vec3 sample_disk(double radius) const;
 };

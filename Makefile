@@ -1,8 +1,8 @@
 CXX := g++
 
 INCLUDES := -I/usr/local/include
-LIBS := -L/usr/local/lib -Wl,-rpath,/usr/local/lib -lraylib
-CXXFLAGS := -std=c++20 -Wall
+LIBS := -L/usr/local/lib -Wl,-rpath,/usr/local/lib
+CXXFLAGS := -std=c++20 -Wall -O3
 
 BIN_PATH := bin
 SRC_PATH := src

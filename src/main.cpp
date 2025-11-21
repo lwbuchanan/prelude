@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
   int width = 400;
   double ratio = 16.0 / 9.0;
   int samples = 100;
-  camera camera(width, ratio, samples);
+  camera camera(width, ratio, samples, 50);
 
   // Render scene
   camera.render(scene, std::string("image"));

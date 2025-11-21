@@ -1,7 +1,10 @@
 #pragma once
 
+#include "common.h"
 #include <cmath>
 #include <ostream>
+
+using std::sqrt;
 
 class vec3 {
 public:
@@ -47,7 +50,16 @@ public:
     return c[0] * c[0] + c[1] * c[1] + c[2] * c[2];
   }
 
-  double length() const { return std::sqrt(length_squared()); }
+  double length() const { return sqrt(length_squared()); }
+
+  static vec3 random() {
+    return vec3(random_double(), random_double(), random_double());
+  }
+
+  static vec3 random(double min, double max) {
+    return vec3(random_double(min, max), random_double(min, max),
+                random_double(min, max));
+  }
 };
 
 // Convenient alias for some gemetry semantics
@@ -96,3 +108,26 @@ inline vec3 cross(const vec3 &u, const vec3 v) {
 // "Normalize" the vector to length 1.0
 inline vec3 unit_vector(const vec3 &v) { return v / v.length(); }
 
+inline vec3 random_unit_vector() {
+  while (true) {
+    vec3 random_vector = vec3::random(-1, 1);
+    double length_squared = random_vector.length_squared();
+
+    // Reject very small values to prevent floating-point underflow
+    if (1e-160 < length_squared && length_squared <= 1)
+      return random_vector / sqrt(length_squared);
+  }
+}
+
+inline vec3 random_on_hemisphere(const vec3& normal) {
+  vec3 random_on_sphere = random_unit_vector();
+  if (dot(random_unit_vector(), normal) > 0) {
+    return random_on_sphere;
+  }
+  return -random_on_sphere;
+}
+
+inline vec3 random_in_unit_disk() {
+  // TODO:
+  return vec3();
+}

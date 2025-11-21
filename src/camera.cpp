@@ -1,9 +1,5 @@
 #include "camera.h"
 
-#include "color.h"
-#include "common.h"
-#include "vec3.h"
-
 #include <fstream>
 #include <iostream>
 
@@ -33,7 +29,7 @@ void camera::render(const hittable &scene, const std::string &name) {
 
       for (int sample = 0; sample < samples_per_pixel; sample++) {
         ray ray = get_ray(i, j);
-        pixel_color += ray_color(ray, scene);
+        pixel_color += ray_color(ray, max_bounces, scene);
       }
 
       // Render the colored pixel
@@ -75,13 +71,20 @@ void camera::initialize() {
   origin_pixel = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 }
 
-color camera::ray_color(const ray &ray, const hittable &scene) const {
+color camera::ray_color(const ray &r, int bounces,
+                        const hittable &scene) const {
   hit_record record;
-  if (scene.hit(ray, interval(0, infinity), record)) {
-    return 0.5 * (record.normal + color(1, 1, 1));
+  if (bounces <= 0) return color(0,0,0);
+
+  if (scene.hit(r, interval(0.001, infinity), record)) {
+    // The hittable diffuses the ray, applies its color adjustment, then
+    // reflects a new ray back into the scene
+    vec3 bounce_direction = record.normal + random_unit_vector();
+    return 0.5 *
+           ray_color(ray(record.point, bounce_direction), bounces - 1, scene);
   }
 
-  vec3 ray_direction_unit = unit_vector(ray.direction());
+  vec3 ray_direction_unit = unit_vector(r.direction());
   double a = 0.5 * (ray_direction_unit.y() + 1.0);
   return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
 }
@@ -97,6 +100,13 @@ ray camera::get_ray(int i, int j) const {
   return ray(ray_origin, ray_direction);
 }
 
+// A pixel is NOT a square...
+// but we can pretend like it is for reasonable sampling
 vec3 camera::sample_square() const {
   return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+}
+
+// Gets a random sample from a "point-like" pixel
+vec3 camera::sample_disk(double radius) const {
+  return radius * random_in_unit_disk();
 }
